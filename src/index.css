@@ -1,0 +1,172 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-editorial: 'Newsreader', Georgia, serif;
+
+    /* Light Theme Palette - Clean, warm graphite, balanced contrast */
+    --background: #F8F9FA;
+    --background-secondary: #FFFFFF;
+    --surface-elevated: #FFFFFF;
+    --surface-interactive: #F1F3F5;
+    --foreground: #14171A;
+    --foreground-secondary: #4B5563;
+    --muted-foreground: #6B7280;
+    --border: #E2E5E9;
+    --border-subtle: #ECEEF1;
+    --border-highlight: #CBD5E1;
+    --accent-orange: #D97706;
+    --accent-green: #059669;
+    --accent-red: #DC2626;
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  }
+
+  .dark {
+    /* Dark Theme Palette - Deep Charcoal, Graphite & Obsidian */
+    --background: #101113;
+    --background-secondary: #15171A;
+    --surface-elevated: #1B1E22;
+    --surface-interactive: #22262B;
+    --foreground: #F3F4F6;
+    --foreground-secondary: #B6BBC3;
+    --muted-foreground: #9299A3;
+    --border: #343941;
+    --border-subtle: #24282F;
+    --border-highlight: #454C56;
+    --accent-orange: #F59E0B;
+    --accent-green: #34D399;
+    --accent-red: #EF4444;
+    --glass-bg: rgba(27, 30, 34, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--background);
+    color: var(--foreground);
+    line-height: 1.6;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-editorial {
+  font-family: var(--font-editorial);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+/* Custom Scrollbar adapting to active theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-highlight);
+}
+
+/* Subtle crosshairs and technical corner markings inspired by primary reference */
+.technical-corner {
+  position: relative;
+}
+.technical-corner::before {
+  content: "+";
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  color: var(--muted-foreground);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.technical-corner::after {
+  content: "+";
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  color: var(--muted-foreground);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Glass and liquid specular highlights */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--card-shadow);
+}
+
+.glass-pill {
+  background: var(--surface-interactive);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+.glass-surface {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Specular light sweep effect */
+@keyframes specular-sheen {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(200%) rotate(45deg);
+  }
+}
+
+.animate-specular {
+  animation: specular-sheen 3s ease-in-out infinite;
+}
+
+/* Subtle glow pulses */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.03); }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 4s ease-in-out infinite;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

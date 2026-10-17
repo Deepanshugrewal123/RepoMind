@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RepoMind Software Intelligence Benchmark Manifest",
+  "version": "1.0.0",
+  "evaluatedAt": "2026-10-17T14:30:00Z",
+  "evaluationEngine": "RepoMind Deterministic Graph & Causality Evaluator v1.0",
+  "datasets": [
+    {
+      "id": "checkout-platform-v2.8",
+      "name": "CheckoutPlatform-v2.8",
+      "description": "Production-grade e-commerce microservices mesh with async Kafka queues, Envoy gateway, and PostgreSQL database cluster.",
+      "type": "microservices_mesh",
+      "languages": ["TypeScript", "Go", "Python", "Rust"],
+      "groundTruth": {
+        "nodesCount": 12,
+        "edgesCount": 19,
+        "criticalRisksCount": 3,
+        "activeIncidentsCount": 1,
+        "simulationScenariosCount": 4,
+        "couplingMetrics": {
+          "payment-service": { "Ca": 4, "Ce": 3, "instability": 0.43 },
+          "order-service": { "Ca": 2, "Ce": 4, "instability": 0.67 },
+          "postgres-primary": { "Ca": 5, "Ce": 0, "instability": 0.00 },
+          "api-gateway": { "Ca": 0, "Ce": 4, "instability": 1.00 }
+        },
+        "incidentGroundTruth": {
+          "incidentId": "INC-8821",
+          "rootCauseCommit": "e8a109f",
+          "rootCauseComponent": "payment-service",
+          "trigger": "Unindexed transaction settlement retry loop saturating PostgreSQL connection pool",
+          "symptomComponent": "order-service",
+          "symptom": "HTTP 504 Gateway Timeout on /checkout/v2/submit",
+          "causalDAGPath": [
+            "commit:e8a109f",
+            "code:payment_settlement.ts#L84-L112",
+            "metric:db.connection.pool_active >= 98",
+            "span:db.query:acquire_lock_timeout",
+            "service:payment-service:HTTP 500",
+            "service:order-service:HTTP 504"
+          ]
+        },
+        "blastRadiusPredictions": {
+          "payment-service": {
+            "expectedBlastRadiusPercent": 75,
+            "cascadeDepth": 3,
+            "impactedServices": ["order-service", "notification-service", "cart-service", "analytics-service"]
+          },
+          "postgres-primary": {
+            "expectedBlastRadiusPercent": 92,
+            "cascadeDepth": 4,
+            "impactedServices": ["payment-service", "order-service", "auth-service", "inventory-service", "user-profile-service"]
+          }
+        }
+      }
+    },
+    {
+      "id": "monolith-order-api",
+      "name": "Monolith-OrderAPI",
+      "description": "Single-repository modular monolithic architecture with layered business domains and cyclic dependency rings.",
+      "type": "modular_monolith",
+      "languages": ["TypeScript", "Node.js"],
+      "groundTruth": {
+        "modulesCount": 42,
+        "internalDependencyEdges": 118,
+        "detectedCyclicRings": [
+          ["OrderDomain", "PaymentGatewayAdapter", "TransactionLedger", "OrderDomain"]
+        ],
+        "couplingMetrics": {
+          "OrderDomain": { "Ca": 18, "Ce": 9, "instability": 0.33 },
+          "PaymentGatewayAdapter": { "Ca": 4, "Ce": 7, "instability": 0.64 }
+        },
+        "architecturalFlaws": [
+          "Cyclic dependency between billing domain and order state machine",
+          "Shared mutable ORM state bypassing service boundaries"
+        ]
+      }
+    },
+    {
+      "id": "distributed-fintech-mesh",
+      "name": "Distributed-Fintech-Mesh",
+      "description": "High-throughput asynchronous banking transfer pipeline with gRPC RPCs and transactional outbox pattern.",
+      "type": "event_driven_fintech",
+      "languages": ["Go", "Rust", "Java"],
+      "groundTruth": {
+        "nodesCount": 24,
+        "edgesCount": 48,
+        "synchronousBottlenecks": 3,
+        "outboxPatternDecoupled": true,
+        "maxEndToEndLatencyMs": 420,
+        "singlePointOfFailure": "central-ledger-db"
+      }
+    }
+  ],
+  "verificationSuites": [
+    {
+      "suiteName": "Topology & Connectivity Invariants",
+      "description": "Asserts graph nodes, edge directionality, and absence of orphaned critical services.",
+      "targetPassRate": 100.0
+    },
+    {
+      "suiteName": "Coupling Formulation Mathematics",
+      "description": "Verifies Robert C. Martin's instability metric: Instability = Ce / (Ca + Ce) bounded strictly in [0, 1].",
+      "targetPassRate": 100.0
+    },
+    {
+      "suiteName": "Blast Radius Transitive Reachability",
+      "description": "Calculates graph forward reachable sets and compares against calibrated blast radius percentages.",
+      "targetPassRate": 95.0
+    },
+    {
+      "suiteName": "Incident Causal DAG Accuracy",
+      "description": "Verifies that telemetry traces pinpoint the exact triggering git commit and root-cause component.",
+      "targetPassRate": 98.0
+    },
+    {
+      "suiteName": "Remediation AST Safety & Risk Delta",
+      "description": "Verifies synthesized patches eliminate connection locks and produce measurable risk score reduction.",
+      "targetPassRate": 100.0
+    }
+  ]
+}
