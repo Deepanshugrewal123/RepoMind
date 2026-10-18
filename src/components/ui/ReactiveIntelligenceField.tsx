@@ -76,7 +76,6 @@ export const ReactiveIntelligenceField: React.FC<ReactiveIntelligenceFieldProps>
 
     resize()
     window.addEventListener('resize', resize)
-    window.addEventListener('scroll', updateCachedRect, { passive: true })
 
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.targetX = e.clientX - cachedRect.left
@@ -106,12 +105,12 @@ export const ReactiveIntelligenceField: React.FC<ReactiveIntelligenceFieldProps>
     ]
 
     // 2. Data Signals travelling along landscape contours
-    const NUM_CONTOURS = 26
-    const signals: ContourSignal[] = Array.from({ length: 16 }, (_, i) => ({
+    const NUM_CONTOURS = 14
+    const signals: ContourSignal[] = Array.from({ length: 6 }, (_, i) => ({
       lineIndex: Math.floor(Math.random() * NUM_CONTOURS),
       progress: Math.random() * width,
-      speed: 0.6 + Math.random() * 0.9,
-      length: 120 + Math.random() * 180,
+      speed: 0.5 + Math.random() * 0.7,
+      length: 90 + Math.random() * 120,
       color: i % 2 === 0 ? '#f59e0b' : '#34d399'
     }))
 
@@ -121,11 +120,11 @@ export const ReactiveIntelligenceField: React.FC<ReactiveIntelligenceFieldProps>
 
     const handleVisibilityChange = () => {
       isVisible = !document.hidden
-      if (isVisible && isInViewport && !prefersReducedMotion) {
+      if (isVisible && isInViewport && window.scrollY <= height + 50 && !prefersReducedMotion) {
         if (!animFrameRef.current) {
           animFrameRef.current = requestAnimationFrame(render)
         }
-      } else if (!isVisible && animFrameRef.current) {
+      } else if ((!isVisible || window.scrollY > height + 50) && animFrameRef.current) {
         cancelAnimationFrame(animFrameRef.current)
         animFrameRef.current = null
       }
@@ -137,22 +136,34 @@ export const ReactiveIntelligenceField: React.FC<ReactiveIntelligenceFieldProps>
       observer = new IntersectionObserver(
         ([entry]) => {
           isInViewport = entry.isIntersecting
-          if (isInViewport && isVisible && !prefersReducedMotion) {
+          if (isInViewport && isVisible && window.scrollY <= 300 && !prefersReducedMotion) {
             if (!animFrameRef.current) {
               animFrameRef.current = requestAnimationFrame(render)
             }
-          } else if (!isInViewport && animFrameRef.current) {
+          } else if ((!isInViewport || window.scrollY > 300) && animFrameRef.current) {
             cancelAnimationFrame(animFrameRef.current)
             animFrameRef.current = null
           }
         },
-        { threshold: 0.05 }
+        { threshold: 0 }
       )
       observer.observe(canvas)
     }
 
+    const handleScrollCheck = () => {
+      if (window.scrollY <= 300 && isInViewport && isVisible && !prefersReducedMotion) {
+        if (!animFrameRef.current) {
+          animFrameRef.current = requestAnimationFrame(render)
+        }
+      } else if (window.scrollY > 300 && animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current)
+        animFrameRef.current = null
+      }
+    }
+    window.addEventListener('scroll', handleScrollCheck, { passive: true })
+
     const render = () => {
-      if (!isVisible || !isInViewport) {
+      if (!isVisible || !isInViewport || window.scrollY > 300) {
         animFrameRef.current = null
         return
       }
@@ -289,7 +300,7 @@ export const ReactiveIntelligenceField: React.FC<ReactiveIntelligenceFieldProps>
       }
 
       // D. Vertical Perspective Grid Ribs (Creating 3D surface mesh feel)
-      const numRibs = 14
+      const numRibs = 8
       const ribStepX = width / (numRibs - 1)
 
       for (let i = 0; i < numRibs; i++) {
@@ -309,8 +320,8 @@ export const ReactiveIntelligenceField: React.FC<ReactiveIntelligenceFieldProps>
         }
 
         ctx.strokeStyle = isDark
-          ? 'rgba(255, 255, 255, 0.045)'
-          : 'rgba(0, 0, 0, 0.055)'
+          ? 'rgba(255, 255, 255, 0.035)'
+          : 'rgba(0, 0, 0, 0.04)'
         ctx.lineWidth = 0.8
         ctx.stroke()
       }
@@ -321,7 +332,7 @@ export const ReactiveIntelligenceField: React.FC<ReactiveIntelligenceFieldProps>
         if (sig.progress > width + sig.length) {
           sig.progress = -sig.length
           sig.lineIndex = Math.floor(Math.random() * NUM_CONTOURS)
-          sig.speed = 0.6 + Math.random() * 0.9
+          sig.speed = 0.5 + Math.random() * 0.7
         }
 
         const headX = sig.progress
@@ -339,17 +350,14 @@ export const ReactiveIntelligenceField: React.FC<ReactiveIntelligenceFieldProps>
         ctx.moveTo(tailX, baseY + tailElev)
         ctx.lineTo(headX, baseY + headElev)
         ctx.strokeStyle = grad
-        ctx.lineWidth = 2.0
+        ctx.lineWidth = 1.8
         ctx.stroke()
 
-        // Glowing packet at head
+        // Clean illuminated packet at head without software blur fallback
         ctx.beginPath()
         ctx.arc(headX, baseY + headElev, 2.5, 0, Math.PI * 2)
         ctx.fillStyle = sig.color
-        ctx.shadowColor = sig.color
-        ctx.shadowBlur = 8
         ctx.fill()
-        ctx.shadowBlur = 0
       })
 
       // F. Subtle Architecture Hints & Connectivity
@@ -392,10 +400,7 @@ export const ReactiveIntelligenceField: React.FC<ReactiveIntelligenceFieldProps>
           ctx.beginPath()
           ctx.arc(nx, ny, 3.5, 0, Math.PI * 2)
           ctx.fillStyle = node.color
-          ctx.shadowColor = node.color
-          ctx.shadowBlur = isDark ? 10 : 4
           ctx.fill()
-          ctx.shadowBlur = 0
 
           // Subtle metadata tag
           ctx.font = '10px "JetBrains Mono", monospace'
@@ -413,7 +418,7 @@ export const ReactiveIntelligenceField: React.FC<ReactiveIntelligenceFieldProps>
 
     return () => {
       window.removeEventListener('resize', resize)
-      window.removeEventListener('scroll', updateCachedRect)
+      window.removeEventListener('scroll', handleScrollCheck)
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseleave', handleMouseLeave)
       document.removeEventListener('visibilitychange', handleVisibilityChange)

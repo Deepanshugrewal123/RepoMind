@@ -1,14 +1,26 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import {
   COMPONENTS_DATA,
+  EDGES_DATA,
   RISKS_DATA,
   ACTIVE_INCIDENT,
   REMEDIATION_PLANS,
+  SYSTEM_HEALTH_METRICS,
+  WHAT_CHANGED_DATA,
   ComponentNode,
+  ComponentEdge,
   RiskItem,
   IncidentRecord,
   RemediationPlan
 } from '../data/mockData'
+import {
+  AnalyzedRepoData,
+  AnalyzedRepoMeta,
+  RepoAnalysisError,
+  analyzeRemoteRepository
+} from '../services/repoAnalysisService'
+import { SecurityAnalysisReport } from '../services/security/types'
+import { getSampleSecurityReport } from '../services/security/securityService'
 
 export type RouteType = 
   | 'home'
@@ -33,6 +45,7 @@ export type AppTabType =
   | 'remediation'
   | 'validation'
   | 'analytics'
+  | 'security'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
 
@@ -70,7 +83,8 @@ interface AppContextType {
   setRepositoryInput: (val: string) => void
   isAnalyzing: boolean
   analysisStep: number
-  startRepositoryAnalysis: (repoUrl: string) => void
+  analysisStepText: string
+  startRepositoryAnalysis: (repoUrl: string, tokenOverride?: string) => Promise<void>
   // Repository & First-Run state
   isFirstRun: boolean
   setIsFirstRun: (val: boolean) => void
@@ -80,6 +94,19 @@ interface AppContextType {
   setIsCustomRepo: (val: boolean) => void
   customRepoUnavailable: string | null
   setCustomRepoUnavailable: (repo: string | null) => void
+  customRepoData: AnalyzedRepoData | null
+  customRepoError: RepoAnalysisError | null
+  setCustomRepoError: (err: RepoAnalysisError | null) => void
+  githubToken: string
+  setGithubToken: (token: string) => void
+  // Dynamic Workspace Data Sources
+  componentsData: ComponentNode[]
+  edgesData: ComponentEdge[]
+  risksData: RiskItem[]
+  systemHealthMetrics: typeof SYSTEM_HEALTH_METRICS
+  whatChangedData: typeof WHAT_CHANGED_DATA
+  customRepoMeta: AnalyzedRepoMeta | null
+  securityReport: SecurityAnalysisReport
   loadSampleProject: () => void
   resetToOnboarding: () => void
   repoModalOpen: boolean
@@ -124,6 +151,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [repositoryInput, setRepositoryInput] = useState<string>('https://github.com/cloud-mesh/checkout-platform')
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false)
   const [analysisStep, setAnalysisStep] = useState<number>(0)
+  const [analysisStepText, setAnalysisStepText] = useState<string>('')
+  const [githubToken, setGithubToken] = useState<string>('')
+  const [customRepoData, setCustomRepoData] = useState<AnalyzedRepoData | null>(null)
+  const [customRepoError, setCustomRepoError] = useState<RepoAnalysisError | null>(null)
 
   // First run & repo selection state
   const [isFirstRun, setIsFirstRun] = useState<boolean>(initial.route !== 'app' || !initial.tab)
@@ -133,6 +164,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isCustomRepo, setIsCustomRepo] = useState<boolean>(false)
   const [customRepoUnavailable, setCustomRepoUnavailable] = useState<string | null>(null)
   const [repoModalOpen, setRepoModalOpen] = useState<boolean>(false)
+
+  // Dynamic Workspace Data Sources (Real Analyzed Data vs Verified Sample Dataset)
+  const componentsData = (isCustomRepo && customRepoData) ? customRepoData.components : COMPONENTS_DATA
+  const edgesData = (isCustomRepo && customRepoData) ? customRepoData.edges : EDGES_DATA
+  const risksData = (isCustomRepo && customRepoData) ? customRepoData.risks : RISKS_DATA
+  const systemHealthMetrics = (isCustomRepo && customRepoData) ? customRepoData.metrics : SYSTEM_HEALTH_METRICS
+  const whatChangedData = (isCustomRepo && customRepoData) ? customRepoData.whatChanged : WHAT_CHANGED_DATA
+  const customRepoMeta = customRepoData?.meta || null
+
+  const sampleSecurityReport = React.useMemo(() => getSampleSecurityReport(), [])
+  const securityReport: SecurityAnalysisReport = (isCustomRepo && customRepoData?.securityReport)
+    ? customRepoData.securityReport
+    : sampleSecurityReport
 
   // Sync browser back/forward buttons
   useEffect(() => {
@@ -289,6 +333,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsFirstRun(false)
     setCurrentRepoName('CheckoutPlatform-v2.8')
     setIsCustomRepo(false)
+    setCustomRepoData(null)
+    setCustomRepoError(null)
     setCustomRepoUnavailable(null)
     setAppTabState('overview')
     setCurrentRouteState('app')
@@ -303,6 +349,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsFirstRun(true)
     setCurrentRepoName(null)
     setIsCustomRepo(false)
+    setCustomRepoData(null)
+    setCustomRepoError(null)
     setCustomRepoUnavailable(null)
     setCurrentRouteState('app')
     const targetHash = `#/app`
@@ -312,11 +360,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const startRepositoryAnalysis = (repoUrl: string) => {
+  const startRepositoryAnalysis = async (repoUrl: string, tokenOverride?: string) => {
     const trimmed = repoUrl.trim()
     setRepositoryInput(trimmed)
+    setCustomRepoError(null)
+    setCustomRepoUnavailable(null)
     setIsAnalyzing(true)
     setAnalysisStep(1)
+    setAnalysisStepText('Resolving repository target...')
 
     const isSample =
       trimmed.toLowerCase().includes('cloud-mesh/checkout-platform') ||
@@ -324,22 +375,69 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       trimmed.toLowerCase().includes('checkout-platform')
 
     if (isSample) {
-      setTimeout(() => setAnalysisStep(2), 500)
-      setTimeout(() => setAnalysisStep(3), 1000)
-      setTimeout(() => setAnalysisStep(4), 1500)
+      setAnalysisStepText('Loading verified reference dataset...')
+      setTimeout(() => {
+        setAnalysisStep(2)
+        setAnalysisStepText('Extracting verified AST call graph...')
+      }, 400)
+      setTimeout(() => {
+        setAnalysisStep(3)
+        setAnalysisStepText('Computing Martin instability & blast radius...')
+      }, 800)
+      setTimeout(() => {
+        setAnalysisStep(4)
+        setAnalysisStepText('Finalizing workspace intelligence...')
+      }, 1200)
       setTimeout(() => {
         setIsAnalyzing(false)
+        setCustomRepoData(null)
         loadSampleProject()
         setRepoModalOpen(false)
-      }, 1900)
-    } else {
-      // Custom repository submitted: probe connection briefly then honestly report client-side capability limit
-      setTimeout(() => setAnalysisStep(2), 600)
-      setTimeout(() => {
-        setIsAnalyzing(false)
-        setRepoModalOpen(false)
-        setCustomRepoUnavailable(trimmed)
-      }, 1400)
+      }, 1500)
+      return
+    }
+
+    // Real Remote Custom Repository Analysis
+    try {
+      const activeToken = tokenOverride !== undefined ? tokenOverride : githubToken
+      const result = await analyzeRemoteRepository(
+        trimmed,
+        (step, label) => {
+          setAnalysisStep(step)
+          setAnalysisStepText(label)
+        },
+        activeToken
+      )
+
+      setCustomRepoData(result)
+      setCurrentRepoName(result.meta.fullName)
+      setIsCustomRepo(true)
+      setIsFirstRun(false)
+      setCustomRepoError(null)
+      setIsAnalyzing(false)
+      setRepoModalOpen(false)
+      setAppTabState('overview')
+      setCurrentRouteState('app')
+      const targetHash = `#/app?tab=overview`
+      if (window.location.hash !== targetHash) {
+        window.history.pushState(null, '', targetHash)
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (err: any) {
+      setIsAnalyzing(false)
+      const errorObj: RepoAnalysisError = err.code
+        ? err
+        : {
+            code: 'PARSING_ERROR',
+            title: 'Repository Analysis Error',
+            message: err.message || 'An unexpected error occurred during repository analysis.',
+            repoUrl: trimmed,
+            recoveryAction: 'Verify the repository name or try again.',
+            canRetry: true,
+            suggestSample: true
+          }
+      setCustomRepoError(errorObj)
+      setCustomRepoUnavailable(trimmed)
     }
   }
 
@@ -372,6 +470,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setRepositoryInput,
         isAnalyzing,
         analysisStep,
+        analysisStepText,
         startRepositoryAnalysis,
         navigateToAppTab,
         isFirstRun,
@@ -382,6 +481,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsCustomRepo,
         customRepoUnavailable,
         setCustomRepoUnavailable,
+        customRepoData,
+        customRepoError,
+        setCustomRepoError,
+        githubToken,
+        setGithubToken,
+        componentsData,
+        edgesData,
+        risksData,
+        systemHealthMetrics,
+        whatChangedData,
+        customRepoMeta,
+        securityReport,
         loadSampleProject,
         resetToOnboarding,
         repoModalOpen,

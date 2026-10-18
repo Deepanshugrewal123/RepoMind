@@ -15,6 +15,7 @@ import { RootCauseView } from '../components/app/views/RootCauseView'
 import { RemediationView } from '../components/app/views/RemediationView'
 import { ValidationView } from '../components/app/views/ValidationView'
 import { AnalyticsView } from '../components/app/views/AnalyticsView'
+import { SecurityView } from '../components/app/views/SecurityView'
 
 import { FirstRunOnboarding } from '../components/app/FirstRunOnboarding'
 
@@ -46,6 +47,8 @@ export const AppDashboard: React.FC = () => {
         return <ValidationView />
       case 'analytics':
         return <AnalyticsView />
+      case 'security':
+        return <SecurityView />
       default:
         return <OverviewView />
     }

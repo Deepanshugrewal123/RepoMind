@@ -1,0 +1,6 @@
+{
+  "name": "synthetic-edge-cases",
+  "version": "1.0.0",
+  "dependencies": {
+    "unclosed": "1.0.0",,,
+  // Malformed JSON syntax error on purpose

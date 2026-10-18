@@ -17,11 +17,17 @@ import {
 } from 'lucide-react'
 
 export const RisksView: React.FC = () => {
-  const { openExplainDrawer, navigateToAppTab } = useApp()
+  const { openExplainDrawer, navigateToAppTab, risksData, systemHealthMetrics } = useApp()
   const [selectedSeverity, setSelectedSeverity] = useState<string>('ALL')
   const [searchQuery, setSearchQuery] = useState<string>('')
 
-  const filteredRisks = RISKS_DATA.filter((risk) => {
+  const activeRisks = risksData && risksData.length > 0 ? risksData : RISKS_DATA
+  const activeMetrics = systemHealthMetrics || SYSTEM_HEALTH_METRICS
+
+  const criticalCount = activeRisks.filter((r) => r.severity === 'CRITICAL').length
+  const highCount = activeRisks.filter((r) => r.severity === 'HIGH').length
+
+  const filteredRisks = activeRisks.filter((risk) => {
     const matchesSev = selectedSeverity === 'ALL' || risk.severity === selectedSeverity
     const matchesQuery =
       risk.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -47,7 +53,7 @@ export const RisksView: React.FC = () => {
             Predictive Risk Intelligence Matrix
           </h2>
           <p className="text-xs sm:text-sm font-sans" style={{ color: 'var(--foreground-secondary)' }}>
-            Triangulated from AST complexity, dependency concentration, and historical code churn.
+            Triangulated from lexical coupling metrics, dependency concentration, and Martin instability.
           </p>
         </div>
 
@@ -60,14 +66,14 @@ export const RisksView: React.FC = () => {
               border: '1px solid rgba(245, 158, 11, 0.3)'
             }}
           >
-            3 Critical • 4 High
+            {criticalCount} Critical • {highCount} High
           </span>
         </div>
       </div>
 
       {/* Multi-Dimensional Category Score Gauges */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
-        {SYSTEM_HEALTH_METRICS.categories.map((cat) => (
+        {activeMetrics.categories.map((cat) => (
           <div
             key={cat.name}
             className="p-3 rounded-2xl flex flex-col justify-between transition-colors"

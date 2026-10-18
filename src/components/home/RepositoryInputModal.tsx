@@ -22,11 +22,16 @@ export const RepositoryInputModal: React.FC = () => {
     setRepositoryInput,
     isAnalyzing,
     analysisStep,
+    analysisStepText,
     startRepositoryAnalysis,
-    loadSampleProject
+    loadSampleProject,
+    githubToken,
+    setGithubToken
   } = useApp()
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [showToken, setShowToken] = useState(false)
+  const [tokenVal, setTokenVal] = useState(githubToken || '')
 
   if (!repoModalOpen) return null
 
@@ -49,7 +54,9 @@ export const RepositoryInputModal: React.FC = () => {
       return
     }
 
-    startRepositoryAnalysis(trimmed)
+    const token = tokenVal.trim() || undefined
+    if (token) setGithubToken(token)
+    startRepositoryAnalysis(trimmed, token)
   }
 
   const sampleRepos = [
@@ -174,6 +181,29 @@ export const RepositoryInputModal: React.FC = () => {
               </div>
             </div>
 
+            {/* Optional GitHub Token Toggle */}
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => setShowToken(!showToken)}
+                className="text-[11px] font-mono text-amber-500 hover:underline cursor-pointer"
+              >
+                {showToken ? '− Hide GitHub Token' : '+ Add GitHub Token (Private repo or higher rate limit)'}
+              </button>
+              {showToken && (
+                <div className="mt-2 p-3 rounded-xl border bg-black/20 text-xs font-mono space-y-1" style={{ borderColor: 'var(--border)' }}>
+                  <span className="text-[10px] text-[var(--muted-foreground)] block">Stored only in memory; never transmitted to backend servers or logged:</span>
+                  <input
+                    type="password"
+                    value={tokenVal}
+                    onChange={(e) => setTokenVal(e.target.value)}
+                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                    className="w-full bg-transparent border-b border-[var(--border)] py-1 outline-none text-xs text-[var(--foreground)]"
+                  />
+                </div>
+              )}
+            </div>
+
             {/* Technical Transparency Note */}
             <div
               className="p-3.5 rounded-2xl border text-xs font-mono space-y-1"
@@ -185,10 +215,10 @@ export const RepositoryInputModal: React.FC = () => {
             >
               <div className="flex items-center gap-1.5 font-bold" style={{ color: 'var(--accent-orange)' }}>
                 <ShieldCheck className="w-4 h-4" />
-                <span>Client Preview Environment</span>
+                <span>Deterministic Client-Side Parsing</span>
               </div>
               <p className="text-[11px] leading-relaxed font-sans">
-                Full AST extraction, compiler symbol binding, and trace correlation are pre-computed on the verified <strong>CheckoutPlatform-v2.8</strong> dataset. Live remote parsing requires the containerized RepoMind Parser Daemon.
+                Real client-side AST extraction, dependency manifest parsing, and Martin instability calculation for public GitHub repositories. Pre-computed traces and synthetic fault runs are available on the <strong>CheckoutPlatform-v2.8</strong> sample.
               </p>
             </div>
 
@@ -267,7 +297,7 @@ export const RepositoryInputModal: React.FC = () => {
             </div>
 
             <div className="pt-2 text-[10px] text-amber-500/90 font-mono">
-              [PREVIEW RUNTIME] Verifying AST manifests & checking parser daemon capability...
+              {analysisStepText || '[RUNTIME] Ingesting source files & computing coupling graph...'}
             </div>
           </div>
         )}

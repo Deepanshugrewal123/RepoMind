@@ -1,0 +1,5 @@
+{
+  "name": "adv-02-sanitizer-category",
+  "version": "1.0.0",
+  "description": "Adversarial test for cross-category sanitizer misuse and category-specific neutralization"
+}

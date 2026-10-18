@@ -1,0 +1,5 @@
+{
+  "name": "adv-01-reassignment",
+  "version": "1.0.0",
+  "description": "Adversarial test for variable overwrites and local scope collisions"
+}

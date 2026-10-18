@@ -1,0 +1,15 @@
+{
+  "name": "express-backend-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production Express TypeScript API gateway and microservice coordinator",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "express": "4.19.2",
+    "lodash": "^4.17.20",
+    "pg": "8.11.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

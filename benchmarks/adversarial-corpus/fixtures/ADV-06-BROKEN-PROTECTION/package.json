@@ -1,0 +1,5 @@
+{
+  "name": "adv-06-broken-protection",
+  "version": "1.0.0",
+  "description": "Adversarial test for fake parameterization traps and broken protections"
+}

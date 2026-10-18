@@ -12,11 +12,12 @@ import {
   Flame,
   Activity,
   Layers,
-  Sparkles
+  Sparkles,
+  Radio
 } from 'lucide-react'
 
 export const RootCauseView: React.FC = () => {
-  const { navigateToAppTab } = useApp()
+  const { navigateToAppTab, isCustomRepo, currentRepoName, resetToOnboarding } = useApp()
   const [selectedChainIndex, setSelectedChainIndex] = useState(4)
   const [isRollbackSimulated, setIsRollbackSimulated] = useState(false)
 
@@ -74,6 +75,35 @@ export const RootCauseView: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-20">
+      {/* Capability Notice for Custom Repositories */}
+      {isCustomRepo && (
+        <div
+          className="p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 font-mono text-xs"
+          style={{
+            backgroundColor: 'rgba(245, 158, 11, 0.08)',
+            borderColor: 'rgba(245, 158, 11, 0.3)',
+            color: 'var(--foreground)'
+          }}
+        >
+          <div className="flex items-center gap-2.5">
+            <Radio className="w-4 h-4 text-amber-500 shrink-0" />
+            <div>
+              <span className="font-bold text-amber-500">[RUNTIME TELEMETRY REQUIRED]</span>
+              <span className="ml-1.5" style={{ color: 'var(--foreground-secondary)' }}>
+                Real-time causal DAG tracing for "{currentRepoName}" requires the cluster telemetry collector. Demonstrating benchmark causal chain below.
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => resetToOnboarding()}
+            className="px-3 py-1 rounded-lg border font-bold text-amber-500 hover:bg-amber-500/10 transition-colors shrink-0 cursor-pointer"
+            style={{ borderColor: 'rgba(245, 158, 11, 0.4)' }}
+          >
+            Switch to Sample Project
+          </button>
+        </div>
+      )}
+
       <div
         className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 gap-3"
         style={{ borderBottom: '1px solid var(--border)' }}

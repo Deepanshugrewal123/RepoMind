@@ -1,0 +1,13 @@
+{
+  "name": "heldout-taint-traps",
+  "version": "1.0.0",
+  "description": "RepoMind Phase 8 held-out validation corpus for context-aware multi-file taint tracking and sanitizer verification",
+  "main": "dist/server.js",
+  "scripts": {
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.11.3"
+  }
+}

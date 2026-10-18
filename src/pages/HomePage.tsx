@@ -5,7 +5,6 @@ import { LiquidMagneticButton } from '../components/ui/LiquidMagneticButton'
 import { ScrollStoryEngine } from '../components/home/ScrollStoryEngine'
 import { ProblemSolutionSection } from '../components/home/ProblemSolutionSection'
 import { BentoFeatureShowcase } from '../components/home/BentoFeatureShowcase'
-import { InteractiveDemoPreview } from '../components/home/InteractiveDemoPreview'
 import { SecurityTrustSection } from '../components/home/SecurityTrustSection'
 import { FinalCtaSection } from '../components/home/FinalCtaSection'
 import { Footer } from '../components/common/Footer'
@@ -31,8 +30,8 @@ export const HomePage: React.FC = () => {
     >
       {/* 1. HERO SECTION: SPACIOUS, EDITORIAL & UNCLUTTERED */}
       <section className="relative min-h-[92vh] sm:min-h-screen flex flex-col items-center justify-center pt-24 sm:pt-32 pb-14 sm:pb-16 px-3 sm:px-6 md:px-8 overflow-hidden">
-        {/* Living Reactive Intelligence Topology Field */}
-        <ReactiveIntelligenceField intensity={0.9} revealArchitectureHints={true} />
+        {/* Living Reactive Intelligence Topology Field (Lightweight, ambient, zero graph clutter) */}
+        <ReactiveIntelligenceField intensity={0.4} revealArchitectureHints={false} />
 
         {/* Ambient Subtle Amber Nebula */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[360px] bg-gradient-to-b from-amber-500/10 via-amber-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
@@ -43,47 +42,25 @@ export const HomePage: React.FC = () => {
             borderColor: 'var(--border-subtle)',
             backgroundColor: 'var(--glass-bg)'
           }}
-          className="relative z-10 max-w-4xl mx-auto text-center p-5 sm:p-10 md:p-12 lg:p-14 rounded-3xl border backdrop-blur-md space-y-5 sm:space-y-7 shadow-2xl"
+          className="relative z-10 max-w-4xl mx-auto text-center p-6 sm:p-10 md:p-12 lg:p-14 rounded-3xl border backdrop-blur-md space-y-6 sm:space-y-7 shadow-2xl"
         >
-          {/* Corner Coordinate Indicators */}
-          <span
-            className="absolute top-2.5 sm:top-3.5 left-3 sm:left-4 text-[9px] sm:text-[10px] font-mono select-none"
-            style={{ color: 'var(--muted-foreground)', opacity: 0.5 }}
-          >
-            + [SYS // 37.77]
-          </span>
-          <span
-            className="absolute top-2.5 sm:top-3.5 right-3 sm:right-4 text-[9px] sm:text-[10px] font-mono select-none"
-            style={{ color: 'var(--muted-foreground)', opacity: 0.5 }}
-          >
-            LATENCY // 14ms +
-          </span>
-          <span
-            className="absolute bottom-2.5 sm:bottom-3.5 left-3 sm:left-4 text-[9px] sm:text-[10px] font-mono select-none hidden sm:block"
-            style={{ color: 'var(--muted-foreground)', opacity: 0.5 }}
-          >
-            + [AST // READY]
-          </span>
-          <span
-            className="absolute bottom-2.5 sm:bottom-3.5 right-3 sm:right-4 text-[9px] sm:text-[10px] font-mono select-none hidden sm:block"
-            style={{ color: 'var(--muted-foreground)', opacity: 0.5 }}
-          >
-            ENV // PRODUCTION +
-          </span>
+          {/* Subtle Editorial Corner Marks */}
+          <span className="absolute top-3 left-4 text-xs font-mono select-none opacity-30 text-[var(--muted-foreground)]">+</span>
+          <span className="absolute top-3 right-4 text-xs font-mono select-none opacity-30 text-[var(--muted-foreground)]">+</span>
+          <span className="absolute bottom-3 left-4 text-xs font-mono select-none opacity-30 text-[var(--muted-foreground)] hidden sm:block">+</span>
+          <span className="absolute bottom-3 right-4 text-xs font-mono select-none opacity-30 text-[var(--muted-foreground)] hidden sm:block">+</span>
 
-          {/* Technical Eyebrow (Wraps cleanly on narrow mobile) */}
+          {/* Clean Editorial Eyebrow */}
           <div
             style={{
               backgroundColor: 'var(--surface-interactive)',
               borderColor: 'var(--border)'
             }}
-            className="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-2.5 px-3 sm:px-4 py-1.5 rounded-full border text-[10px] sm:text-xs font-mono tracking-wider uppercase shadow-sm max-w-full text-center"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-[11px] font-mono tracking-wide uppercase shadow-sm"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
-            <span className="text-amber-500 font-semibold shrink-0">[SYS // 37.77]</span>
-            <span className="opacity-30 hidden sm:inline">|</span>
-            <span style={{ color: 'var(--foreground-secondary)' }}>
-              SOFTWARE INTELLIGENCE / SYSTEM 01
+            <span style={{ color: 'var(--foreground)' }} className="font-semibold">
+              AI Software Intelligence & Reliability Platform
             </span>
           </div>
 
@@ -136,11 +113,11 @@ export const HomePage: React.FC = () => {
               backgroundColor: 'var(--surface-interactive)',
               borderColor: 'var(--border)'
             }}
-            className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full border text-[10px] sm:text-xs font-mono text-[var(--muted-foreground)] hover:text-amber-400 transition-all hover:scale-105 cursor-pointer shadow-sm animate-bounce"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-mono text-[var(--muted-foreground)] hover:text-amber-500 transition-all hover:scale-105 cursor-pointer shadow-sm"
             aria-label="Scroll down to explore architecture"
           >
             <ChevronDown className="w-3.5 h-3.5 text-amber-500" />
-            <span>SCROLL TO EXPLORE ARCHITECTURE ↓</span>
+            <span>Scroll to explore ↓</span>
           </button>
         </div>
       </section>
@@ -154,13 +131,10 @@ export const HomePage: React.FC = () => {
       {/* 4. BENTO FEATURE SHOWCASE */}
       <BentoFeatureShowcase />
 
-      {/* 5. FOCUSED INTERACTIVE DEMO PREVIEW (Progressive Disclosure) */}
-      <InteractiveDemoPreview />
-
-      {/* 6. SECURITY & TRUST VERIFIED CLAIMS */}
+      {/* 5. SECURITY & TRUST VERIFIED CLAIMS */}
       <SecurityTrustSection />
 
-      {/* 7. FINAL HEROIC CALL TO ACTION */}
+      {/* 6. FINAL HEROIC CALL TO ACTION */}
       <FinalCtaSection />
 
       {/* 8. PROFESSIONAL PRODUCTION FOOTER */}

@@ -1,0 +1,6 @@
+{
+  "name": "credential-trap-repo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Validation harness for credential detection, entropy thresholds, and false positive placeholder suppression"
+}

@@ -7,7 +7,14 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "benchmark": "node benchmarks/run-benchmarks.js"
+    "benchmark": "node benchmarks/run-benchmarks.js",
+    "test:security": "node tests/securityScanner.test.js",
+    "test:taint": "node tests/taintAnalysis.test.js",
+    "test:adversarial": "node tests/adversarialSecurity.test.js",
+    "test:dependencies": "node tests/dependencyIntelligence.test.js",
+    "test:supply-chain": "node tests/supplyChainAdversarial.test.js",
+    "test:standards": "node tests/standardsConformance.test.js",
+    "validate:corpus": "node benchmarks/run-corpus-validation.js"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",

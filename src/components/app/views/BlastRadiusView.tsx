@@ -15,44 +15,64 @@ import {
 } from 'lucide-react'
 
 export const BlastRadiusView: React.FC = () => {
-  const { selectedComponentId, setSelectedComponentId, navigateToAppTab } = useApp()
+  const { selectedComponentId, setSelectedComponentId, navigateToAppTab, componentsData, customRepoData, isCustomRepo } = useApp()
 
+  const activeComponents = componentsData && componentsData.length > 0 ? componentsData : COMPONENTS_DATA
   const selectedComponent =
-    COMPONENTS_DATA.find((c) => c.id === selectedComponentId) || COMPONENTS_DATA[1]
-
-  const isPayment = selectedComponent.id === 'payment-service'
-  const isOrder = selectedComponent.id === 'order-service'
+    activeComponents.find((c) => c.id === selectedComponentId) || activeComponents[0]
 
   // Dynamic tiers depending on selected component
-  const blastData = isPayment
-    ? {
-        radiusPercent: 68,
-        risk: 'CRITICAL',
-        affectedApis: ['/api/v2/checkout/settle', '/api/v1/orders/create', '/webhooks/stripe'],
-        rto: '4.5 mins',
-        tier1: ['OrderService (gRPC sync timeout)', 'APIGateway (504 Gateway Timeout)'],
-        tier2: ['CheckoutFrontend (Spinner freeze)', 'InvoiceWorker (Backlogged queue)'],
-        tier3: ['NotificationWorker (Delayed receipt emails)', 'KafkaEventStream (Buffer buildup)']
-      }
-    : isOrder
-    ? {
-        radiusPercent: 54,
-        risk: 'HIGH',
-        affectedApis: ['/api/v1/cart/checkout', '/api/v1/discounts/validate'],
-        rto: '2.5 mins',
-        tier1: ['APIGateway (502 Bad Gateway)', 'PaymentService (Idle thread waiting)'],
-        tier2: ['InventoryService (Unreleased hold leases)', 'PostgresPrimary (Lock contention)'],
-        tier3: ['AnalyticsPipeline (Missing conversion events)']
-      }
-    : {
-        radiusPercent: 32,
-        risk: 'MEDIUM',
-        affectedApis: ['/internal/rpc'],
-        rto: '1.2 mins',
-        tier1: ['APIGateway (Partial degradation)'],
-        tier2: ['Downstream microservices (Cached fallbacks active)'],
-        tier3: ['Background worker queues']
-      }
+  let blastData: {
+    radiusPercent: number
+    risk: 'CRITICAL' | 'HIGH' | 'MEDIUM'
+    affectedApis: string[]
+    rto: string
+    tier1: string[]
+    tier2: string[]
+    tier3: string[]
+  }
+
+  const customDetail = customRepoData?.blastRadiusMap?.[selectedComponent.id]
+
+  if (isCustomRepo && customDetail) {
+    blastData = {
+      ...customDetail,
+      risk: customDetail.risk === 'LOW' ? 'MEDIUM' : customDetail.risk
+    }
+  } else {
+    const isPayment = selectedComponent.id === 'payment-service'
+    const isOrder = selectedComponent.id === 'order-service'
+
+    blastData = isPayment
+      ? {
+          radiusPercent: 68,
+          risk: 'CRITICAL',
+          affectedApis: ['/api/v2/checkout/settle', '/api/v1/orders/create', '/webhooks/stripe'],
+          rto: '4.5 mins',
+          tier1: ['OrderService (gRPC sync timeout)', 'APIGateway (504 Gateway Timeout)'],
+          tier2: ['CheckoutFrontend (Spinner freeze)', 'InvoiceWorker (Backlogged queue)'],
+          tier3: ['NotificationWorker (Delayed receipt emails)', 'KafkaEventStream (Buffer buildup)']
+        }
+      : isOrder
+      ? {
+          radiusPercent: 54,
+          risk: 'HIGH',
+          affectedApis: ['/api/v1/cart/checkout', '/api/v1/discounts/validate'],
+          rto: '2.5 mins',
+          tier1: ['APIGateway (502 Bad Gateway)', 'PaymentService (Idle thread waiting)'],
+          tier2: ['InventoryService (Unreleased hold leases)', 'PostgresPrimary (Lock contention)'],
+          tier3: ['AnalyticsPipeline (Missing conversion events)']
+        }
+      : {
+          radiusPercent: 32,
+          risk: 'MEDIUM',
+          affectedApis: ['/internal/rpc'],
+          rto: '1.2 mins',
+          tier1: ['APIGateway (Partial degradation)'],
+          tier2: ['Downstream microservices (Cached fallbacks active)'],
+          tier3: ['Background worker queues']
+        }
+  }
 
   return (
     <div className="space-y-6 pb-20">
@@ -87,7 +107,7 @@ export const BlastRadiusView: React.FC = () => {
               color: 'var(--foreground)'
             }}
           >
-            {COMPONENTS_DATA.map((c) => (
+            {activeComponents.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name} (Risk {c.riskScore})
               </option>

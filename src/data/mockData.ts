@@ -19,15 +19,21 @@ export interface ComponentNode {
   description: string
   x?: number
   y?: number
+  instabilityScore?: number
+  isObserved?: boolean
+  filesCount?: number
+  files?: string[]
 }
 
 export interface ComponentEdge {
   source: string
   target: string
-  type: 'sync_http' | 'grpc' | 'async_queue' | 'sql_query' | 'cache_lookup'
-  latencyMs: number
-  callVolume: string
+  type: 'sync_http' | 'grpc' | 'async_queue' | 'sql_query' | 'cache_lookup' | 'static_import' | 'module_import'
+  latencyMs?: number
+  callVolume?: string
   criticalPath: boolean
+  evidence?: any
+  isObserved?: boolean
 }
 
 export interface RiskItem {

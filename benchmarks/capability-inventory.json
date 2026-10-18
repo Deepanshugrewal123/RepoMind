@@ -99,6 +99,16 @@
       "methodology": "Time-series git log aggregation, Pareto distribution analysis, and bus factor entropy scoring.",
       "evidenceConfidence": "Deterministic (100% against Git history)",
       "limitations": "Pair programming or squash merges can mask individual contributor nuances."
+    },
+    {
+      "id": "CAP-10",
+      "name": "Evidence-Based Security Intelligence",
+      "status": "Fully implemented",
+      "implementationScope": "Deterministic SAST lexical scanning, Shannon entropy credential detection, lockfile semver resolution, and context-aware interprocedural source-to-sink taint tracking for TypeScript/JavaScript and Python.",
+      "inputs": ["Source code files (.ts, .js, .py, .go, .java)", "Dependency manifests (package.json, package-lock.json, requirements.txt, go.mod, Cargo.toml)", "Verified CVE/GHSA advisory databases"],
+      "methodology": "Bounded interprocedural dataflow taint propagation, function registry call-graph resolution, verified sanitizer recognition, lexical AST matching, Shannon entropy credential thresholding (H >= 3.6), and lockfile semver evaluation.",
+      "evidenceConfidence": "Deterministic + Verified Advisory + Proven Taint Trail (100% verifiable)",
+      "limitations": "Does not perform dynamic penetration testing or execute live runtime exploits against external endpoints. Taint tracking is bounded to depth <= 5 and currently implemented for TypeScript/JavaScript and Python; other languages use lexical SAST heuristics."
     }
   ]
 }

@@ -18,17 +18,27 @@ import {
 } from 'lucide-react'
 
 export const ArchitectureView: React.FC = () => {
-  const { selectedComponentId, setSelectedComponentId, navigateToAppTab, openExplainDrawer } = useApp()
+  const { selectedComponentId, setSelectedComponentId, navigateToAppTab, openExplainDrawer, componentsData } = useApp()
+
+  const activeComponents = componentsData && componentsData.length > 0 ? componentsData : COMPONENTS_DATA
 
   const selectedComponent =
-    COMPONENTS_DATA.find((c) => c.id === selectedComponentId) || COMPONENTS_DATA[1]
+    activeComponents.find((c) => c.id === selectedComponentId) || activeComponents[0]
 
   const layers: { title: string; type: ComponentNode['layer']; desc: string }[] = [
-    { title: 'Edge & Ingress Gateway', type: 'gateway', desc: 'Reverse proxy, SSL termination, and rate limiting' },
-    { title: 'Core Microservices', type: 'service', desc: 'Business logic, transaction orchestration, domain models' },
+    { title: 'Edge & Ingress Gateway', type: 'gateway', desc: 'Reverse proxy, SSL termination, and routing entrypoints' },
+    { title: 'Core Modules & Services', type: 'service', desc: 'Business logic, transaction orchestration, domain models' },
     { title: 'Data Stores & Message Queues', type: 'data', desc: 'Relational storage, distributed caching, async buses' },
-    { title: 'Third-Party External APIs', type: 'external', desc: 'External SaaS vendors and payment processors' }
+    { title: 'Third-Party & External Dependencies', type: 'external', desc: 'External SaaS vendors, network clients, SDKs' }
   ]
+
+  // Any components with custom or undefined layer get grouped under core
+  const getCompsForLayer = (type: ComponentNode['layer']) => {
+    if (type === 'service') {
+      return activeComponents.filter((c) => c.layer === 'service' || !['gateway', 'data', 'external'].includes(c.layer))
+    }
+    return activeComponents.filter((c) => c.layer === type)
+  }
 
   return (
     <div className="space-y-6 pb-20">
@@ -46,7 +56,7 @@ export const ArchitectureView: React.FC = () => {
             Architecture Topology & Service Boundaries
           </h2>
           <p className="text-xs sm:text-sm font-sans" style={{ color: 'var(--foreground-secondary)' }}>
-            Synthesized from AST parsing, import hierarchies, and network descriptors.
+            Synthesized from lexical import hierarchies, manifest declarations, and component boundaries.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -65,7 +75,7 @@ export const ArchitectureView: React.FC = () => {
         {/* Left Column: Layered Architecture Components (8 cols) */}
         <div className="lg:col-span-8 space-y-6">
           {layers.map((layer) => {
-            const comps = COMPONENTS_DATA.filter((c) => c.layer === layer.type)
+            const comps = getCompsForLayer(layer.type)
             if (comps.length === 0) return null
 
             return (

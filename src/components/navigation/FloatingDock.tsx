@@ -17,7 +17,8 @@ import {
   Minimize2,
   ChevronUp,
   X,
-  Check
+  Check,
+  ShieldCheck
 } from 'lucide-react'
 
 interface SubDestination {
@@ -41,7 +42,7 @@ interface NavGroup {
 }
 
 export const FloatingDock: React.FC = () => {
-  const { appTab, setAppTab, setAskRepoMindOpen, focusMode, setFocusMode } = useApp()
+  const { appTab, setAppTab, setAskRepoMindOpen, focusMode, setFocusMode, securityReport } = useApp()
   
   // State for currently open group popover (null if closed)
   const [openGroupId, setOpenGroupId] = useState<string | null>(null)
@@ -51,6 +52,8 @@ export const FloatingDock: React.FC = () => {
   const popoverRef = useRef<HTMLDivElement>(null)
   const triggerRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({})
   const itemRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({})
+
+  const securityCount = securityReport?.summary?.findingsCount || 0
 
   // Semantic groups configuration
   const navGroups: NavGroup[] = [
@@ -89,7 +92,7 @@ export const FloatingDock: React.FC = () => {
       label: 'Investigate',
       shortLabel: 'Investigate',
       icon: <ShieldAlert className="w-4 h-4" />,
-      badge: '4',
+      badge: securityCount > 0 ? String(4 + 1) : '4',
       items: [
         {
           id: 'risks',
@@ -98,6 +101,14 @@ export const FloatingDock: React.FC = () => {
           icon: <ShieldAlert className="w-4 h-4 text-amber-400" />,
           badge: '3',
           accentColor: '#f59e0b'
+        },
+        {
+          id: 'security',
+          label: 'Security Intelligence',
+          shortDesc: 'Evidence-based SAST, secrets & dependencies',
+          icon: <ShieldCheck className="w-4 h-4 text-emerald-400" />,
+          badge: securityCount > 0 ? String(securityCount) : undefined,
+          accentColor: '#10b981'
         },
         {
           id: 'blast-radius',

@@ -20,11 +20,32 @@ import {
 } from 'lucide-react'
 
 export const IncidentsView: React.FC = () => {
-  const { navigateToAppTab, isFixApplied } = useApp()
+  const { navigateToAppTab, isFixApplied, isCustomRepo, currentRepoName, loadSampleProject } = useApp()
   const [selectedTimelineIndex, setSelectedTimelineIndex] = useState(0)
 
   return (
     <div className="space-y-6 pb-20">
+      {/* Honest Status Notice for Custom Repositories */}
+      {isCustomRepo && (
+        <div
+          style={{ backgroundColor: 'rgba(245, 158, 11, 0.08)', borderColor: 'rgba(245, 158, 11, 0.25)' }}
+          className="p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono"
+        >
+          <div className="flex items-center gap-2.5 text-amber-500">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>
+              <strong>OpenTelemetry Collector Disconnected:</strong> Live APM trace ingestion and runtime anomaly alarms for <strong>{currentRepoName}</strong> require the cluster agent daemon. Below is a simulated incident workflow on the verified benchmark.
+            </span>
+          </div>
+          <button
+            onClick={() => loadSampleProject()}
+            className="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-500 font-semibold cursor-pointer shrink-0 self-start sm:self-auto transition-colors"
+          >
+            Switch to Sample Incident →
+          </button>
+        </div>
+      )}
+
       {/* View Header */}
       <div
         className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 gap-3"
@@ -33,7 +54,7 @@ export const IncidentsView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider mb-1 text-rose-400">
             <Activity className="w-4 h-4" />
-            <span>[INCIDENT // 06.WAR_ROOM] • DEMO INCIDENT SCENARIO</span>
+            <span>[INCIDENT // 06.WAR_ROOM] • {isCustomRepo ? 'SIMULATED DEMO WORKFLOW' : 'DEMO INCIDENT SCENARIO'}</span>
           </div>
           <h2 className="text-2xl font-bold font-display" style={{ color: 'var(--foreground)' }}>
             {ACTIVE_INCIDENT.id}: {ACTIVE_INCIDENT.title}

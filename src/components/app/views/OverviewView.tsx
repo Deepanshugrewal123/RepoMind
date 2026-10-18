@@ -38,14 +38,22 @@ export const OverviewView: React.FC = () => {
     isFixApplied,
     currentRepoName,
     isCustomRepo,
-    resetToOnboarding
+    resetToOnboarding,
+    customRepoMeta,
+    componentsData,
+    risksData,
+    systemHealthMetrics
   } = useApp()
 
   const [showDeepTelemetry, setShowDeepTelemetry] = useState(true)
 
-  const healthScore = isFixApplied ? 88 : SYSTEM_HEALTH_METRICS.overallScore
-  const criticalRisksCount = isFixApplied ? 1 : SYSTEM_HEALTH_METRICS.criticalRisks
-  const activeIncidentsCount = isFixApplied ? 0 : SYSTEM_HEALTH_METRICS.activeIncidents
+  const activeMetrics = systemHealthMetrics || SYSTEM_HEALTH_METRICS
+  const activeComponents = componentsData && componentsData.length > 0 ? componentsData : COMPONENTS_DATA
+  const activeRisks = risksData && risksData.length > 0 ? risksData : RISKS_DATA
+
+  const healthScore = isFixApplied ? 88 : activeMetrics.overallScore
+  const criticalRisksCount = isFixApplied ? 1 : activeMetrics.criticalRisks
+  const activeIncidentsCount = isCustomRepo ? 0 : (isFixApplied ? 0 : activeMetrics.activeIncidents)
 
   return (
     <div className="space-y-6 pb-20">
@@ -66,11 +74,13 @@ export const OverviewView: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-mono font-bold tracking-wider uppercase" style={{ color: 'var(--accent-orange)' }}>
-                {isCustomRepo ? 'ANALYZED REPOSITORY' : 'DEMO ENVIRONMENT'}
+                {isCustomRepo ? 'ANALYZED GITHUB REPOSITORY' : 'DEMO ENVIRONMENT'}
               </span>
               <span className="opacity-30 font-mono">|</span>
               <span className="text-xs font-mono px-2 py-0.5 rounded border" style={{ backgroundColor: 'var(--surface-interactive)', borderColor: 'var(--border-subtle)', color: 'var(--foreground-secondary)' }}>
-                {isCustomRepo ? 'Simulated Repo Model' : 'CheckoutPlatform-v2.8'}
+                {isCustomRepo && customRepoMeta
+                  ? `${customRepoMeta.supportedFilesCount} source files parsed • ${customRepoMeta.stars.toLocaleString()} ★ • ${customRepoMeta.primaryLanguage || 'Multi-language'}${customRepoMeta.isMonorepo ? ' • Monorepo' : ''}`
+                  : 'CheckoutPlatform-v2.8'}
               </span>
             </div>
 
@@ -80,8 +90,8 @@ export const OverviewView: React.FC = () => {
 
             {/* Plain-Language 1-Sentence System Summary */}
             <p className="text-xs sm:text-sm font-sans max-w-3xl leading-relaxed" style={{ color: 'var(--foreground-secondary)' }}>
-              {isCustomRepo 
-                ? `Representative architecture model synthesized for ${currentRepoName}. In this client-side demo, RepoMind maps sample microservices topology and failure scenarios to demonstrate risk analytics.`
+              {isCustomRepo && customRepoMeta
+                ? `${customRepoMeta.description || `Deterministic lexical dependency graph extracted for ${currentRepoName}.`} Indexed ${customRepoMeta.totalFiles} files across ${activeComponents.length} structural components with ${activeRisks.length} analyzed risk points.`
                 : 'Distributed microservices architecture managing cart checkout, high-throughput payment orchestration, and asynchronous inventory reconciliation.'}
             </p>
           </div>
@@ -112,7 +122,7 @@ export const OverviewView: React.FC = () => {
         </div>
       </div>
 
-      {/* Simulated Demonstration Callout (When Custom Repo is active) */}
+      {/* Real Ingestion Callout (When Custom Repo is active) */}
       {isCustomRepo && (
         <div 
           style={{ backgroundColor: 'rgba(245, 158, 11, 0.08)', borderColor: 'rgba(245, 158, 11, 0.25)' }}
@@ -121,7 +131,7 @@ export const OverviewView: React.FC = () => {
           <div className="flex items-center gap-2.5 text-amber-500">
             <Sparkles className="w-4 h-4 shrink-0" />
             <span>
-              <strong>Simulated Demonstration Model:</strong> Client-side browser demo. Showing synthetic telemetry and representative microservice topology mapped to <strong>{currentRepoName}</strong>.
+              <strong>Deterministic Ingestion Active:</strong> Client-side lexical import and manifest analysis completed for <strong>{currentRepoName}</strong>. Extracted {activeComponents.length} components, Martin instability metrics, and BFS blast radius maps. (OpenTelemetry runtime streams require APM collector).
             </span>
           </div>
           <button
@@ -153,7 +163,7 @@ export const OverviewView: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Finding 1: Critical Risk */}
           <div
-            onClick={() => navigateToAppTab('risks', 'payment-service')}
+            onClick={() => navigateToAppTab('risks', activeRisks[0]?.componentId || activeComponents[0]?.id)}
             style={{
               backgroundColor: 'var(--surface-elevated)',
               borderColor: 'rgba(239, 68, 68, 0.3)'
@@ -165,13 +175,13 @@ export const OverviewView: React.FC = () => {
                 <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 font-bold">
                   1. STRUCTURAL RISK
                 </span>
-                <span className="text-xs font-mono font-bold text-red-400">Risk 92/100</span>
+                <span className="text-xs font-mono font-bold text-red-400">Risk {activeRisks[0]?.score || 88}/100</span>
               </div>
               <h4 className="text-sm sm:text-base font-bold font-display group-hover:text-amber-400 transition-colors" style={{ color: 'var(--foreground)' }}>
-                PaymentService DB Pool Saturation
+                {activeRisks[0]?.title || 'Database Pool Saturation'}
               </h4>
               <p className="text-xs mt-1.5 leading-relaxed" style={{ color: 'var(--foreground-secondary)' }}>
-                High afferent coupling (Ca=14) combined with synchronous 45s database transactions creates a cascade outage risk under load.
+                {activeRisks[0]?.summary || 'High coupling concentration and synchronous calls create cascade outage risk under load.'}
               </p>
             </div>
             <div className="mt-4 pt-3 border-t flex items-center justify-between text-xs font-mono text-red-400" style={{ borderColor: 'var(--border-subtle)' }}>
@@ -180,9 +190,9 @@ export const OverviewView: React.FC = () => {
             </div>
           </div>
 
-          {/* Finding 2: Active Incident */}
+          {/* Finding 2: Active Incident or High-Impact Hotspot */}
           <div
-            onClick={() => navigateToAppTab('incidents')}
+            onClick={() => isCustomRepo ? navigateToAppTab('risks', activeRisks[1]?.componentId) : navigateToAppTab('incidents')}
             style={{
               backgroundColor: 'var(--surface-elevated)',
               borderColor: isFixApplied ? 'rgba(52, 211, 153, 0.3)' : 'rgba(244, 63, 94, 0.4)'
@@ -193,35 +203,39 @@ export const OverviewView: React.FC = () => {
               <div className="flex items-center justify-between mb-2">
                 <span
                   className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded font-bold border ${
-                    isFixApplied 
+                    isCustomRepo
+                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      : isFixApplied 
                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
                       : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
                   }`}
                 >
-                  {isFixApplied ? 'RESOLVED' : '2. ACTIVE P0 INCIDENT'}
+                  {isCustomRepo ? '2. COUPLING HOTSPOT' : isFixApplied ? 'RESOLVED' : '2. ACTIVE P0 INCIDENT'}
                 </span>
                 <span className="text-xs font-mono font-bold text-rose-400">
-                  {isFixApplied ? 'Healthy' : ACTIVE_INCIDENT.id}
+                  {isCustomRepo ? (activeRisks[1] ? `Risk ${activeRisks[1].score}` : 'Monitored') : (isFixApplied ? 'Healthy' : ACTIVE_INCIDENT.id)}
                 </span>
               </div>
               <h4 className="text-sm sm:text-base font-bold font-display group-hover:text-amber-400 transition-colors" style={{ color: 'var(--foreground)' }}>
-                {isFixApplied ? 'DB Pool Stabilized' : ACTIVE_INCIDENT.title}
+                {isCustomRepo ? (activeRisks[1]?.title || 'Component Coupling Bottleneck') : (isFixApplied ? 'DB Pool Stabilized' : ACTIVE_INCIDENT.title)}
               </h4>
               <p className="text-xs mt-1.5 leading-relaxed" style={{ color: 'var(--foreground-secondary)' }}>
-                {isFixApplied 
+                {isCustomRepo 
+                  ? (activeRisks[1]?.summary || 'High afferent coupling creates upstream blast radius sensitivity.')
+                  : isFixApplied 
                   ? 'Remediation plan REM-892 applied successfully. DB connection pool usage reduced from 98% to 22%.'
                   : 'Correlated with commit 7f3a9b2: Unindexed query in transaction loop causing 31.4% error spike.'}
               </p>
             </div>
             <div className="mt-4 pt-3 border-t flex items-center justify-between text-xs font-mono text-rose-400" style={{ borderColor: 'var(--border-subtle)' }}>
-              <span>{isFixApplied ? 'View Validation' : 'Open Incident Room'}</span>
+              <span>{isCustomRepo ? 'Inspect Hotspot' : (isFixApplied ? 'View Validation' : 'Open Incident Room')}</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
 
           {/* Finding 3: Recommended Remediation */}
           <div
-            onClick={() => navigateToAppTab('remediation', 'payment-service')}
+            onClick={() => navigateToAppTab('remediation', activeComponents[0]?.id)}
             style={{
               backgroundColor: 'var(--surface-elevated)',
               borderColor: 'rgba(52, 211, 153, 0.3)'
@@ -236,10 +250,12 @@ export const OverviewView: React.FC = () => {
                 <span className="text-xs font-mono font-bold text-emerald-400">94% Confidence</span>
               </div>
               <h4 className="text-sm sm:text-base font-bold font-display group-hover:text-amber-400 transition-colors" style={{ color: 'var(--foreground)' }}>
-                Runbook REM-892: Decouple SQL TX
+                {isCustomRepo ? `Decouple ${activeComponents[0]?.name || 'Core Module'}` : 'Runbook REM-892: Decouple SQL TX'}
               </h4>
               <p className="text-xs mt-1.5 leading-relaxed" style={{ color: 'var(--foreground-secondary)' }}>
-                Isolate synchronous third-party gateway API call outside PostgreSQL transaction block with an idempotency key.
+                {isCustomRepo 
+                  ? `Introduce asynchronous message boundary or read cache to reduce efferent dependency chain on ${activeComponents[0]?.name || 'database'}.`
+                  : 'Isolate synchronous third-party gateway API call outside PostgreSQL transaction block with an idempotency key.'}
               </p>
             </div>
             <div className="mt-4 pt-3 border-t flex items-center justify-between text-xs font-mono text-emerald-400" style={{ borderColor: 'var(--border-subtle)' }}>
@@ -367,10 +383,10 @@ export const OverviewView: React.FC = () => {
               <span className="text-[10px] font-mono uppercase" style={{ color: 'var(--muted-foreground)' }}>High-Risk Components</span>
               <div className="my-2">
                 <span className="text-2xl sm:text-3xl font-bold font-mono text-amber-400">
-                  {SYSTEM_HEALTH_METRICS.highRiskComponents}
+                  {activeMetrics.highRiskComponents}
                 </span>
               </div>
-              <span className="text-[10px] font-mono" style={{ color: 'var(--muted-foreground)' }}>of 10 total services</span>
+              <span className="text-[10px] font-mono" style={{ color: 'var(--muted-foreground)' }}>of {activeComponents.length} total services</span>
             </div>
 
             {/* Dependency Hotspots */}
@@ -385,7 +401,7 @@ export const OverviewView: React.FC = () => {
               <span className="text-[10px] font-mono uppercase" style={{ color: 'var(--muted-foreground)' }}>Dependency Hotspots</span>
               <div className="my-2">
                 <span className="text-2xl sm:text-3xl font-bold font-mono text-sky-400">
-                  {SYSTEM_HEALTH_METRICS.dependencyHotspots}
+                  {activeMetrics.dependencyHotspots}
                 </span>
               </div>
               <span className="text-[10px] font-mono" style={{ color: 'var(--muted-foreground)' }}>High fan-in concentration</span>
@@ -403,7 +419,7 @@ export const OverviewView: React.FC = () => {
               <span className="text-[10px] font-mono uppercase text-emerald-400 font-semibold">Recommended Actions</span>
               <div className="my-2">
                 <span className="text-2xl sm:text-3xl font-bold font-mono text-emerald-400">
-                  {SYSTEM_HEALTH_METRICS.recommendedActions}
+                  {activeMetrics.recommendedActions}
                 </span>
               </div>
               <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
@@ -582,7 +598,7 @@ export const OverviewView: React.FC = () => {
                 </div>
 
                 <div className="space-y-2 font-mono text-xs">
-                  {COMPONENTS_DATA.slice(0, 5).map((comp) => (
+                  {activeComponents.slice(0, 5).map((comp) => (
                     <div
                       key={comp.id}
                       onClick={() => navigateToAppTab('architecture', comp.id)}
@@ -671,6 +687,24 @@ export const OverviewView: React.FC = () => {
                       <div className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>Inspect team bus factor & churn</div>
                     </div>
                     <ArrowRight className="w-4 h-4 shrink-0" />
+                  </button>
+
+                  <button
+                    onClick={() => navigateToAppTab('security')}
+                    className="w-full text-left p-3 rounded-xl transition-colors flex items-center justify-between cursor-pointer hover:border-emerald-500/40"
+                    style={{
+                      backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                      border: '1px solid rgba(16, 185, 129, 0.25)',
+                      color: 'var(--foreground)'
+                    }}
+                  >
+                    <div>
+                      <div className="font-bold flex items-center gap-1.5 text-emerald-400">
+                        <span>Security Intelligence Audit</span>
+                      </div>
+                      <div className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>Inspect SAST, secrets & dependencies</div>
+                    </div>
+                    <ArrowRight className="w-4 h-4 shrink-0 text-emerald-400" />
                   </button>
                 </div>
               </div>

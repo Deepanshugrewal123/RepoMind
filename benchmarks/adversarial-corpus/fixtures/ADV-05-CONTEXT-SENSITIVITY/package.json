@@ -1,0 +1,5 @@
+{
+  "name": "adv-05-context-sensitivity",
+  "version": "1.0.0",
+  "description": "Adversarial test for multiple call sites to the same helper function"
+}

@@ -19,8 +19,11 @@ import {
 } from 'lucide-react'
 
 export const InteractiveGraphDemo: React.FC = () => {
-  const { navigateToAppTab, openExplainDrawer } = useApp()
-  const [selectedNodeId, setSelectedNodeId] = useState<string>('payment-service')
+  const { navigateToAppTab, openExplainDrawer, componentsData, edgesData, isCustomRepo } = useApp()
+  const activeComponents = componentsData && componentsData.length > 0 ? componentsData : COMPONENTS_DATA
+  const activeEdges = edgesData && edgesData.length > 0 ? edgesData : EDGES_DATA
+
+  const [selectedNodeId, setSelectedNodeId] = useState<string>(activeComponents[0]?.id || 'payment-service')
   const [showRiskColors, setShowRiskColors] = useState<boolean>(true)
   const [showCriticalOnly, setShowCriticalOnly] = useState<boolean>(false)
   const [searchQuery, setSearchQuery] = useState<string>('')
@@ -40,7 +43,21 @@ export const InteractiveGraphDemo: React.FC = () => {
     'notification-worker': { x: 660, y: 420 }
   }
 
-  const selectedNode = COMPONENTS_DATA.find((c) => c.id === selectedNodeId) || COMPONENTS_DATA[1]
+  const getNodePos = (node: ComponentNode, idx: number, total: number) => {
+    if ((node as any).x && (node as any).y) {
+      return { x: (node as any).x, y: (node as any).y }
+    }
+    if (nodePositions[node.id]) {
+      return nodePositions[node.id]
+    }
+    const angle = (idx / Math.max(1, total)) * 2 * Math.PI - Math.PI / 2
+    return {
+      x: Math.round(410 + 260 * Math.cos(angle)),
+      y: Math.round(240 + 150 * Math.sin(angle))
+    }
+  }
+
+  const selectedNode = activeComponents.find((c) => c.id === selectedNodeId) || activeComponents[0]
 
   const getNodeColor = (node: ComponentNode) => {
     if (!showRiskColors) return '#38bdf8'
@@ -50,7 +67,7 @@ export const InteractiveGraphDemo: React.FC = () => {
     return '#10b981'
   }
 
-  const filteredEdges = EDGES_DATA.filter((e) => {
+  const filteredEdges = activeEdges.filter((e) => {
     if (showCriticalOnly) return e.criticalPath
     return true
   })
@@ -71,7 +88,7 @@ export const InteractiveGraphDemo: React.FC = () => {
             <Network className="w-4 h-4" />
             <span>Interactive Software Knowledge Graph</span>
             <span className="text-[10px] px-2 py-0.5 rounded bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10" style={{ color: 'var(--muted-foreground)' }}>
-              DEMO DATASET
+              {isCustomRepo ? 'ANALYZED REPOSITORY' : 'DEMO DATASET'}
             </span>
           </div>
           <h3 className="text-xl sm:text-2xl font-bold font-display" style={{ color: 'var(--foreground)' }}>
@@ -168,8 +185,12 @@ export const InteractiveGraphDemo: React.FC = () => {
 
             {/* Edges */}
             {filteredEdges.map((edge, i) => {
-              const src = nodePositions[edge.source]
-              const tgt = nodePositions[edge.target]
+              const srcNode = activeComponents.find((c) => c.id === edge.source)
+              const tgtNode = activeComponents.find((c) => c.id === edge.target)
+              const srcIdx = activeComponents.findIndex((c) => c.id === edge.source)
+              const tgtIdx = activeComponents.findIndex((c) => c.id === edge.target)
+              const src = srcNode ? getNodePos(srcNode, srcIdx, activeComponents.length) : nodePositions[edge.source]
+              const tgt = tgtNode ? getNodePos(tgtNode, tgtIdx, activeComponents.length) : nodePositions[edge.target]
               if (!src || !tgt) return null
 
               const isEdgeHighlighted =
@@ -208,8 +229,8 @@ export const InteractiveGraphDemo: React.FC = () => {
             })}
 
             {/* Nodes */}
-            {COMPONENTS_DATA.map((node) => {
-              const pos = nodePositions[node.id] || { x: 400, y: 240 }
+            {activeComponents.map((node, idx) => {
+              const pos = getNodePos(node, idx, activeComponents.length)
               const isSelected = node.id === selectedNodeId
               const color = getNodeColor(node)
 

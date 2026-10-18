@@ -15,6 +15,8 @@ import {
   ArrowRight,
   Code2,
   Terminal,
+  ShieldCheck,
+  LineChart,
   X
 } from 'lucide-react'
 
@@ -65,12 +67,52 @@ export const CommandPalette: React.FC = () => {
       }
     },
     {
+      id: 'nav-architecture',
+      title: 'Inspect Architecture Topology & Service Boundaries',
+      category: 'Navigation',
+      icon: <Layers className="w-4 h-4 text-sky-400" />,
+      action: () => {
+        navigateToAppTab('architecture')
+        setCommandPaletteOpen(false)
+      }
+    },
+    {
       id: 'nav-graph',
       title: 'Inspect Interactive Knowledge Graph',
       category: 'Navigation',
       icon: <Network className="w-4 h-4 text-emerald-400" />,
       action: () => {
         navigateToAppTab('graph')
+        setCommandPaletteOpen(false)
+      }
+    },
+    {
+      id: 'nav-security',
+      title: 'View Security Intelligence, SAST, Secrets & SBOM',
+      category: 'Navigation',
+      icon: <ShieldCheck className="w-4 h-4 text-emerald-400" />,
+      action: () => {
+        navigateToAppTab('security')
+        setCommandPaletteOpen(false)
+      }
+    },
+    {
+      id: 'nav-blast-radius',
+      title: 'Simulate Concentric Blast Radius',
+      category: 'Navigation',
+      icon: <Flame className="w-4 h-4 text-rose-400" />,
+      action: () => {
+        navigateToAppTab('blast-radius')
+        setCommandPaletteOpen(false)
+      }
+    },
+    {
+      id: 'nav-analytics',
+      title: 'View Engineering Fingerprint & Churn Analytics',
+      category: 'Navigation',
+      icon: <LineChart className="w-4 h-4 text-amber-400" />,
+      action: () => {
+        navigateToAppTab('analytics')
         setCommandPaletteOpen(false)
       }
     },

@@ -47,7 +47,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   const systemScore = isFixApplied ? 88 : 72
 
   const getTabCategory = (tab: string) => {
-    if (['overview', 'architecture', 'risks', 'incidents'].includes(tab)) return 'PRIMARY'
+    if (['overview', 'architecture', 'risks', 'incidents', 'security'].includes(tab)) return 'PRIMARY'
     if (['graph', 'blast-radius', 'simulation'].includes(tab)) return 'EXPLORE'
     if (['root-cause', 'remediation', 'validation'].includes(tab)) return 'ACTIONS'
     if (tab === 'analytics') return 'INSIGHTS'
@@ -120,6 +120,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                         views: [
                           { id: 'overview', name: 'Overview' },
                           { id: 'architecture', name: 'Architecture' },
+                          { id: 'security', name: 'Security Intelligence' },
                           { id: 'risks', name: 'Risks' },
                           { id: 'incidents', name: 'Incidents' }
                         ]

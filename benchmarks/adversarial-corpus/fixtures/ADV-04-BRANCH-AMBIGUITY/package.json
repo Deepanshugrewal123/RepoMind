@@ -1,0 +1,5 @@
+{
+  "name": "adv-04-branch-ambiguity",
+  "version": "1.0.0",
+  "description": "Adversarial test for conditional branch flows and status classification"
+}

@@ -21,12 +21,17 @@ export const FirstRunOnboarding: React.FC = () => {
     setRepositoryInput,
     isAnalyzing,
     analysisStep,
+    analysisStepText,
     startRepositoryAnalysis,
-    loadSampleProject
+    loadSampleProject,
+    githubToken,
+    setGithubToken
   } = useApp()
 
   const [inputVal, setInputVal] = useState(repositoryInput || '')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [showToken, setShowToken] = useState(false)
+  const [tokenVal, setTokenVal] = useState(githubToken || '')
 
   const handleAnalyze = () => {
     setErrorMsg(null)
@@ -45,7 +50,9 @@ export const FirstRunOnboarding: React.FC = () => {
       return
     }
 
-    startRepositoryAnalysis(trimmed)
+    const token = tokenVal.trim() || undefined
+    if (token) setGithubToken(token)
+    startRepositoryAnalysis(trimmed, token)
   }
 
   return (
@@ -133,9 +140,48 @@ export const FirstRunOnboarding: React.FC = () => {
               )}
             </div>
 
+            {/* Optional GitHub Token Toggle */}
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => setShowToken(!showToken)}
+                className="text-[11px] font-mono text-amber-500 hover:underline cursor-pointer"
+              >
+                {showToken ? '− Hide GitHub Token' : '+ Add GitHub Token (Private repo or higher rate limit)'}
+              </button>
+              {showToken && (
+                <div className="mt-2 p-3 rounded-xl border bg-black/20 text-xs font-mono space-y-1" style={{ borderColor: 'var(--border)' }}>
+                  <span className="text-[10px] text-[var(--muted-foreground)] block">Stored only in memory; never transmitted to servers or logged:</span>
+                  <input
+                    type="password"
+                    value={tokenVal}
+                    onChange={(e) => setTokenVal(e.target.value)}
+                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                    className="w-full bg-transparent border-b border-[var(--border)] py-1 outline-none text-xs text-[var(--foreground)]"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Live Progress Feedback when Analyzing */}
+            {isAnalyzing && (
+              <div
+                className="p-3 rounded-xl border text-xs font-mono space-y-2 animate-in fade-in"
+                style={{ backgroundColor: 'rgba(245, 158, 11, 0.08)', borderColor: 'rgba(245, 158, 11, 0.3)' }}
+              >
+                <div className="flex items-center gap-2 text-amber-500 font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                  <span>Stage {analysisStep} of 4:</span>
+                </div>
+                <div className="text-[11px] text-[var(--foreground)] truncate">
+                  {analysisStepText || 'Processing codebase structure...'}
+                </div>
+              </div>
+            )}
+
             <div className="text-[11px] font-mono space-y-1" style={{ color: 'var(--muted-foreground)' }}>
-              <div>Supported: Public GitHub repositories (`github.com/org/repo`)</div>
-              <div className="text-[10px] italic">Remote parsing requires containerized daemon. Verified reference dataset ready.</div>
+              <div>Supported: Public & private GitHub repositories (`github.com/org/repo`)</div>
+              <div className="text-[10px] text-emerald-500/90 font-semibold">✔ Real client-side AST parsing, manifest ingestion, & coupling analysis.</div>
             </div>
           </div>
 
@@ -146,7 +192,7 @@ export const FirstRunOnboarding: React.FC = () => {
               className="w-full"
               onClick={handleAnalyze}
               isLoading={isAnalyzing}
-              loadingText="Synthesizing AST..."
+              loadingText={analysisStepText || 'Analyzing Repository...'}
               icon={<ArrowRight className="w-4 h-4" />}
             >
               Analyze Repository

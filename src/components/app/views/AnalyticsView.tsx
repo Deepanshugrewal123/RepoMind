@@ -12,14 +12,44 @@ import {
   GitCommit,
   ArrowRight,
   Sparkles,
-  Layers
+  Layers,
+  Radio
 } from 'lucide-react'
 
 export const AnalyticsView: React.FC = () => {
-  const { navigateToAppTab } = useApp()
+  const { navigateToAppTab, isCustomRepo, currentRepoName, resetToOnboarding } = useApp()
 
   return (
     <div className="space-y-6 pb-20">
+      {/* Capability Notice for Custom Repositories */}
+      {isCustomRepo && (
+        <div
+          className="p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 font-mono text-xs"
+          style={{
+            backgroundColor: 'rgba(245, 158, 11, 0.08)',
+            borderColor: 'rgba(245, 158, 11, 0.3)',
+            color: 'var(--foreground)'
+          }}
+        >
+          <div className="flex items-center gap-2.5">
+            <Radio className="w-4 h-4 text-amber-500 shrink-0" />
+            <div>
+              <span className="font-bold text-amber-500">[GIT LOG HISTORY REQUIRED]</span>
+              <span className="ml-1.5" style={{ color: 'var(--foreground-secondary)' }}>
+                180-day commit discipline analysis for "{currentRepoName}" requires full Git commit log ingestion. Demonstrating benchmark engineering profile below.
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => resetToOnboarding()}
+            className="px-3 py-1 rounded-lg border font-bold text-amber-500 hover:bg-amber-500/10 transition-colors shrink-0 cursor-pointer"
+            style={{ borderColor: 'rgba(245, 158, 11, 0.4)' }}
+          >
+            Switch to Sample Project
+          </button>
+        </div>
+      )}
+
       <div
         className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 gap-3"
         style={{ borderBottom: '1px solid var(--border)' }}

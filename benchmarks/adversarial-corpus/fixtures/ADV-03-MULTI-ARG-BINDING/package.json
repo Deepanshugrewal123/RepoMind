@@ -1,0 +1,5 @@
+{
+  "name": "adv-03-multi-arg-binding",
+  "version": "1.0.0",
+  "description": "Adversarial test for function call argument position binding"
+}
